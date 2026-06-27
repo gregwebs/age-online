@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { typeageImplementation } from "./age";
 
 const {
@@ -172,6 +172,7 @@ function App() {
   const resultContent = ageError || (mode === "enc" ? ciphertext : plaintext);
   const [confirmDestroy, setConfirmDestroy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function loadFileAsPlaintext(file: File) {
     try {
@@ -187,6 +188,14 @@ function App() {
     setDragOver(false);
     const file = e.dataTransfer?.files?.[0];
     if (file) loadFileAsPlaintext(file);
+  }
+
+  function onFilePicked(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) loadFileAsPlaintext(file);
+    // reset so picking the same file again re-triggers onChange
+    input.value = "";
   }
 
   function destroyKey() {
@@ -361,9 +370,24 @@ function App() {
             onDragLeave={() => setDragOver(false)}
             onDrop={onPlaintextDrop}
           />
-          <p style={{ ...s.muted, ...t.muted, margin: "0.3rem 0 0" }}>
-            Tip: drag &amp; drop a file onto the box above to load its contents.
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.4rem" }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              style={{ display: "none" }}
+              onChange={onFilePicked}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{ ...s.toggleBtn, ...t.toggleBtn }}
+            >
+              📄 Choose file
+            </button>
+            <span style={{ ...s.muted, ...t.muted }}>
+              or drag &amp; drop a file onto the box above to load its contents.
+            </span>
+          </div>
           <label htmlFor="encrypted_output" style={{ ...s.label, marginTop: "0.75rem" }}>Encrypted output</label>
           <textarea
             id="encrypted_output"
