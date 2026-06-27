@@ -35,5 +35,10 @@
   "dependencies": {
     "age-encryption": "^0.3.0",
     "preact": "^10.28.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
