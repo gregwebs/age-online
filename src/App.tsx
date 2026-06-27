@@ -171,6 +171,23 @@ function App() {
 
   const resultContent = ageError || (mode === "enc" ? ciphertext : plaintext);
   const [confirmDestroy, setConfirmDestroy] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  async function loadFileAsPlaintext(file: File) {
+    try {
+      const text = await file.text();
+      setPlaintext(text);
+    } catch (e) {
+      setAgeError(`ERROR: could not read file (${`${e}`.replace(/^(\s*error\s*:\s*)+/gi, "")})`);
+    }
+  }
+
+  function onPlaintextDrop(e: DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (file) loadFileAsPlaintext(file);
+  }
 
   function destroyKey() {
     if (recieveMode) { globalThis.location.href = "/"; return; }
@@ -333,9 +350,20 @@ function App() {
             id="encrypt_stuff"
             value={plaintext}
             rows={10}
-            style={{ ...s.textarea, ...t.textarea }}
+            placeholder="Type or paste text, or drop a file here to encrypt."
+            style={{
+              ...s.textarea,
+              ...t.textarea,
+              ...(dragOver ? { borderColor: t.segBtnActive.background as string, borderStyle: "dashed" } : {}),
+            }}
             onChange={(e) => setPlaintext((e.target as HTMLTextAreaElement).value)}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onPlaintextDrop}
           />
+          <p style={{ ...s.muted, ...t.muted, margin: "0.3rem 0 0" }}>
+            Tip: drag &amp; drop a file onto the box above to load its contents.
+          </p>
           <label htmlFor="encrypted_output" style={{ ...s.label, marginTop: "0.75rem" }}>Encrypted output</label>
           <textarea
             id="encrypted_output"
@@ -372,7 +400,7 @@ function App() {
       {/* Footer */}
       <div style={{ fontSize: 12, lineHeight: 1.8, ...t.footer }}>
         <a href="https://github.com/nkcmr/age-online" target="_blank" rel="noreferrer noopener" style={{ ...s.link, ...t.link }}>github</a><br />
-        powered by <a href="https://pages.cloudflare.com/" target="_blank" rel="noreferrer noopener" style={{ ...s.link, ...t.link }}>cloudflare pages</a>
+        hosted on <a href="https://pages.github.com/" target="_blank" rel="noreferrer noopener" style={{ ...s.link, ...t.link }}>github pages</a>
       </div>
     </main>
   );
